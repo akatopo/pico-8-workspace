@@ -5,4 +5,4 @@ align_args: false
 align_parameter: false
 extra_sep_at_table_end: true
 single_quote_to_double_quote: true
-break_after_functioncall_lp: true
+break_after_functioncall_lp: false
