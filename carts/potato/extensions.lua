@@ -1,3 +1,6 @@
+ch_width = 4
+ch_height = 6
+
 function map(table, f)
   local new_table = {}
   for k, v in pairs(table) do
@@ -7,8 +10,6 @@ function map(table, f)
   return new_table
 end
 
--- https://www.lexaloffle.com/bbs/?pid=43636
--- converts anything to string, even nested tables
 function tostring(any)
   if type(any) == "function" then
     return "function"
@@ -35,5 +36,5 @@ function tostring(any)
   if type(any) == "number" then
     return "" .. any
   end
-  return "unkown" -- should never show
+  return type(any) -- coroutines, anything else?
 end
