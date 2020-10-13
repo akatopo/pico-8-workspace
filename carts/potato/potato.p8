@@ -1,8 +1,13 @@
 pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
-#include util.lua
+#include extensions.lua
+#include modules.lua
+#include animation.lua
 #include hooks.lua
+#include mouth.lua
+#include eyes.lua
+#include text.lua
 #include potato.lua
 
 __gfx__
