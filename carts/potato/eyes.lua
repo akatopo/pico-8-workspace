@@ -2,9 +2,10 @@ create_module("eyes", function(export)
   local use_state = import("use_state").from("hooks")
   local double_spr = import("double_spr").from("animation")
 
-  local function yield_frames_eyes(t, i)
+  local function yield_frames_eyes(t, sprite_coords)
+    local sprite_x, sprite_y = unpack(sprite_coords)
     for frame = 1, t do
-      double_spr(i, 80, 72)
+      double_spr(sprite_x, sprite_y, 80, 80 - potato_sprites.height)
       yield()
     end
   end
@@ -12,7 +13,10 @@ create_module("eyes", function(export)
   local function c_eyes_move()
     return cocreate(function()
       while (true) do
-        for i in all({1, 7, 1, 9}) do
+        for i in all({
+          potato_sprites.top_half[1], potato_sprites.top_half[4],
+          potato_sprites.top_half[1], potato_sprites.top_half[5],
+        }) do
           yield_frames_eyes(30, i)
         end
       end
@@ -22,11 +26,13 @@ create_module("eyes", function(export)
   local function c_eyes_blink()
     return cocreate(function()
       while (true) do
-        for i in all({1, 11}) do
-          if (i == 1) then
-            yield_frames_eyes(60, i)
+        for sprite_coords in all({
+          potato_sprites.top_half[1], potato_sprites.top_half[6],
+        }) do
+          if (sprite_coords == potato_sprites.top_half[1]) then
+            yield_frames_eyes(60, sprite_coords)
           else
-            yield_frames_eyes(7, i)
+            yield_frames_eyes(7, sprite_coords)
           end
         end
       end
