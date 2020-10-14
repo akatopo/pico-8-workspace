@@ -1,9 +1,8 @@
 function module()
   local modules = {}
-  local id = function(x) return x end
 
   function import(...)
-    local exports = map({...}, id)
+    local exports = {...}
 
     return {
       from = function(moduleName)
