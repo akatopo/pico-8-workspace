@@ -41,14 +41,16 @@ create_module("hooks", function(export)
     return cur_store
   end)
 
-  export("use_keys", function()
+  export("use_keys", function(use_btnp)
+    local use_btnp = use_btnp == nil and true or use_btnp
+    local f = use_btnp and btnp or btn
     return {
-      left = btn(0),
-      right = btn(1),
-      up = btn(2),
-      down = btn(3),
-      a = btn(4),
-      b = btn(5),
+      left = f(0),
+      right = f(1),
+      up = f(2),
+      down = f(3),
+      a = f(4),
+      b = f(5),
     }
   end)
 
