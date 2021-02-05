@@ -21,18 +21,25 @@ colors = {
   ["light-peach"] = 15, -- #FFCCAA 	255, 204, 170
 }
 
+text_box = {height = 42}
+
 potato_sprites = {
   top_half = {
     {8, 0}, {8 + 1 * 16, 0}, {8 + 2 * 16, 0}, {8 + 3 * 16, 0}, {8 + 4 * 16, 0},
-    {8 + 5 * 16, 0},
+    {8 + 5 * 16, 0}, {8 + 6 * 16, 0}, {8, 16}, {8 + 1 * 16, 16},
   },
   bottom_half = {
     {8, 8}, {8 + 1 * 16, 8}, {8 + 2 * 16, 8}, {8 + 3 * 16, 8}, {8 + 4 * 16, 8},
-    {8 + 5 * 16, 8},
+    {8 + 5 * 16, 8}, {8 + 6 * 16, 8}, {8, 24}, {8 + 1 * 16, 24},
   },
   height = 16,
   width = 16,
 }
+
+potato_mouth_x = 48
+potato_mouth_y = 40
+potato_eyes_x = potato_mouth_x
+potato_eyes_y = potato_mouth_y - potato_sprites.height
 
 function map(table, f)
   local new_table = {}
@@ -55,6 +62,7 @@ end
 
 function identity(x) return x end
 
+-- https://www.lexaloffle.com/bbs/?pid=43636
 function tostring(any)
   if type(any) == "function" then
     return "function"
