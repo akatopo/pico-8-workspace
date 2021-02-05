@@ -1,10 +1,10 @@
 create_module("bg", function(export)
   local use_state = import("use_state").from("hooks")
 
-  function c_fill_bg()
+  local function c_fill_bg()
     return cocreate(function()
       while (true) do
-        rectfill(0, 0, 128, 128, 1)
+        rectfill(0, 0, 128, 128 - text_box.height, colors["black"])
         yield()
       end
     end)
