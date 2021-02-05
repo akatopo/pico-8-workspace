@@ -1,35 +1,34 @@
 create_module("animation", function(export)
-  local function quad_spr(sprite, x, y)
-    local sprite_x_offset = 1
-    local sprite_y_offset = 16
-    local sprite_dim = 8
-    local sprites = {
-      {sprite, x, y}, {sprite + sprite_x_offset, x + sprite_dim, y},
-      {sprite + sprite_y_offset, x, y + sprite_dim},
-      {
-        sprite + sprite_x_offset + sprite_y_offset, x + sprite_dim,
-        y + sprite_dim,
-      },
-    }
-    foreach(sprites, function(s) spr(unpack(s)) end)
+  local function count_lines(s)
+    local count = 1
+    for i = 1, #s do
+      if (sub(s, i, i) == "\n") then
+        count = count + 1
+      end
+    end
+    return count
   end
 
-  local function double_spr(sprite_x, sprite_y, x, y)
+  export("double_spr", function(sprite_x, sprite_y, x, y)
     local sprite_dim = 8
     palt(14, true)
     palt(0, false)
     sspr(sprite_x, sprite_y, sprite_dim * 2, sprite_dim, x, y, sprite_dim * 4,
       sprite_dim * 2)
     palt()
-  end
+  end)
 
-  export("double_spr", double_spr)
+  export("draw_text", function(s, x, y, blink, text_color)
+    local text_color = text_color or colors["white"]
 
-  export("yield_frames", function(t, sprite_coords)
-    local sprite_x, sprite_y = unpack(sprite_coords)
-    for frame = 1, t do
-      double_spr(sprite_x, sprite_y, 80, 80)
-      yield()
+    print(s, x, y, text_color)
+    if (blink) then
+      local block = chr(16)
+      local line_total = count_lines(s)
+      local line_length = #(split(s, "\n")[line_total])
+      local y_offset = (line_total - 1) * ch_height
+      local x_offset = line_length * ch_width
+      print(block, x + x_offset, y + y_offset, text_color)
     end
   end)
 
