@@ -26,4 +26,15 @@ create_module("store", function(export)
       end,
     }
   end)
+
+  export("combine_reducers", function(name_reducer_map)
+    return function(state, action)
+      local new_state = {}
+      printh("dispathed " .. tostring(action), "store")
+      for name, reducer in pairs(name_reducer_map) do
+        new_state[name] = reducer(state[name], action)
+      end
+      return new_state
+    end
+  end)
 end)
