@@ -97,4 +97,12 @@ create_module("hooks", function(export)
     cur_component_id = nil
     -- cur_store = {}
   end)
+
+  export("destroy_hooks", function()
+    cur_component_id = nil
+    state_hook_initial_vals = {}
+    state_hook_vals = {}
+    state_hook_indices = {}
+    cur_store = {}
+  end)
 end)
