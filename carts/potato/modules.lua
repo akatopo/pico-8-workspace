@@ -18,20 +18,22 @@ function module()
         end
 
         return unpack(map(exports, function(v)
-          return modules[moduleName][v]
+          local export = modules[moduleName][v]
+          assert(export, "export " .. v .. " not found")
+          return export
         end))
       end,
     }
   end
 
-  local function export(moduleName, exportName, value)
-    if (modules[moduleName] == nil) then
-      modules[moduleName] = {}
-    end
-    modules[moduleName][exportName] = value
-  end
-
   function create_module(moduleName, module)
+    local function export(moduleName, exportName, value)
+      if (modules[moduleName] == nil) then
+        modules[moduleName] = {}
+      end
+      modules[moduleName][exportName] = value
+    end
+
     local export = function(exportName, f) export(moduleName, exportName, f) end
     return module(export)
   end
