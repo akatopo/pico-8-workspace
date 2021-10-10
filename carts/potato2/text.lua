@@ -17,7 +17,8 @@ create_module("text", function(export)
   local draw_text = import("draw_text").from("animation")
 
   -- 1px border size, 42px text box height, 128 px width
-  local text_box_coords = {0, 127, 127, 128 - text_box.height + 1}
+  local text_box_coords = {1, 126, 126, 128 - text_box.height + 2}
+  local text_frame_coords = {0, 127, 127, 128 - text_box.height + 1}
 
   local function c_text_print(s, text_index, dispatch)
     return cocreate(function(params)
@@ -65,11 +66,11 @@ create_module("text", function(export)
     return cocreate(function()
       local args = assign({}, text_box_coords)
       local args2 = assign({}, text_frame_coords)
-      add(args, colors.white)
+      add(args, colors["dark-blue"])
       add(args2, colors.white)
       while (true) do
-        rect(unpack(args))
-        -- rect(unpack(args2))
+        rect(unpack(args2))
+        rectfill(unpack(args))
         yield()
       end
     end)
