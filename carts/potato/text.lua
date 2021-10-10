@@ -1,77 +1,118 @@
 create_module("text", function(export)
-  local use_state, use_keys, use_selector, use_dispatch =
-    import("use_state", "use_keys", "use_selector", "use_dispatch").from("hooks")
+  local use_state, use_keys, use_selector, use_dispatch = import("use_state",
+                                                            "use_keys",
+                                                            "use_selector",
+                                                            "use_dispatch").from(
+    "hooks")
+  local text_skip_selector, can_print_selector, text_index_selector,
+    text_done_selector, script_done_selector, text_selector = import(
+                                                                "text_skip",
+                                                                "can_print",
+                                                                "text_index",
+                                                                "text_done",
+                                                                "script_done",
+                                                                "text").from(
+    "selectors")
+  local lipsync = import("*").from("lipsync")
+  local draw_text = import("draw_text").from("animation")
 
-  function count_lines(s)
-    local count = 1
-    for i = 1, #s do
-      if (sub(s, i, i) == "\n") then
-        count = count + 1
-      end
-    end
-    return count
-  end
+  -- 1px border size, 42px text box height, 128 px width
+  local text_box_coords = {0, 127, 127, 128 - text_box.height + 1}
 
-  function yield_print(t, s, x, y, blink)
-    local text_color = colors["light-grey"]
-    for frame = 1, t do
-      print(s, x, y, text_color)
-      if (blink) then
-        local block = chr(16)
-        local line_total = count_lines(s)
-        local line_length = #(split(s, "\n")[line_total])
-        local y_offset = (line_total - 1) * ch_height
-        local x_offset = line_length * ch_width
-        print(block, x + x_offset, y + y_offset, text_color)
-      end
-      return yield()
-    end
-  end
-
-  function c_text_print(s, dispatch)
+  local function c_text_print(s, text_index, dispatch)
     return cocreate(function(params)
       local i = 1
       local frame_printing = 1
-      local frames_per_ch = 3
+      local frames_per_ch = 2
       local skip = params.skip
+      local text_x = ch_width - 1
+      local text_y = 128 - text_box.height + ch_width
+      local mouth_sprites = lipsync.parse(s)
+
       while (i ~= #s + 1) do
         if (skip) then
           break
         end
-        local new_params = yield_print(frames_per_ch, sub(s, 1, i), 10, 30,
-          frame_printing % 30 < 15)
-        skip = new_params.skip
+
+        dispatch({type = "letter_printed", sprite_coords = mouth_sprites[i]})
+        sfx(30)
+        for frame = 1, frames_per_ch do
+          draw_text(sub(s, 1, i), text_x, text_y, frame_printing % 30 < 15)
+          local new_params = yield()
+          skip = new_params.skip
+        end
         frame_printing = i * frames_per_ch
         i = i + 1
       end
       dispatch({type = "text_done"})
+      dispatch({type = "stop_talking", text_index = text_index})
+
+      local x_button = chr(151)
       while (true) do
         for frame = 1, 30 do
-          yield_print(1, s, 10, 30, frame < 15)
+          draw_text(s, text_x, text_y, frame < 15)
+
+          draw_text(x_button, 128 - ch_width * 2 - 2, frame < 15 and
+            (128 - ch_height - 2) or (128 - ch_height - 1), false)
+
+          yield()
         end
+      end
+    end)
+  end
+
+  local function c_fill_bg()
+    return cocreate(function()
+      local args = assign({}, text_box_coords)
+      local args2 = assign({}, text_frame_coords)
+      add(args, colors.white)
+      add(args2, colors.white)
+      while (true) do
+        rect(unpack(args))
+        -- rect(unpack(args2))
+        yield()
       end
     end)
   end
 
   export("default", function(props)
-    local txt = props.txt
-
     local dispatch = use_dispatch()
     local key_state = use_keys()
+    local skip = use_selector(text_skip_selector)
+    local can_print = use_selector(can_print_selector)
+    local text_index = use_selector(text_index_selector)
+    local text = use_selector(text_selector)
+    local prev_index, set_prev_index = use_state()
+    local text_done = use_selector(text_done_selector)
+    local script_done = use_selector(script_done_selector)
+    local prev_actions, set_prev_actions = use_state({})
+    local actions = prev_actions
 
-    local skip = use_selector(function(state)
-      return state.text == "request_skip"
-    end)
-
-    -- cursor as state?
-    local prev_actions = use_state(function()
-      return {c_text_print(txt, dispatch)}
-    end)
-
-    if (key_state.b) then
-      dispatch({type = "request_text_skip"})
+    if (not can_print) then
+      actions = {c_fill_bg()}
+      set_prev_actions({})
+    else
+      if (prev_index ~= text_index) then
+        actions = {c_fill_bg(), c_text_print(text, text_index, dispatch)}
+        set_prev_actions(actions)
+        set_prev_index(text_index)
+      end
     end
 
-    return prev_actions, {skip = skip}
+    if (key_state.b and text_done) then
+      if (not script_done) then
+        dispatch({type = "text_start"})
+        dispatch({type = "start_talking"})
+      else
+        dispatch({type = "scene_done"})
+      end
+    elseif (key_state.b and can_print) then
+      dispatch({type = "request_text_skip"})
+    elseif (key_state.a and not can_print) then
+      dispatch({type = "text_start"})
+      dispatch({type = "start_talking"})
+    end
+
+    return actions, {skip = skip}
   end)
 end)
