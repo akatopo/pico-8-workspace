@@ -50,6 +50,14 @@ function map(table, f)
   return new_table
 end
 
+function reduce(table, reducer, init)
+  local res = init
+  for k, v in pairs(table) do
+    res = reducer(res, v, k, table)
+  end
+  return res
+end
+
 function assign(table, ...)
   local others = {...}
   for i = 1, #others do
@@ -90,4 +98,48 @@ function tostring(any)
     return "" .. any
   end
   return type(any) -- coroutines, anything else?
+end
+
+function tojson(any, no_quote)
+  local quote = function(s) return "\"" .. s .. "\"" end
+
+  if type(any) == "function" then
+    return "function"
+  end
+  if any == nil then
+    return "null"
+  end
+  if type(any) == "string" then
+    return no_quote and any or quote(join(split(any, "\n"), "\\n"))
+  end
+  if type(any) == "boolean" then
+    return any and "true" or "false"
+  end
+  if type(any) == "table" then
+    -- good enough for us
+    local is_array = any[1] ~= nil and any[#any] ~= nil
+    local first = true
+    local str = is_array and "[ " or "{ "
+    for k, v in pairs(any) do
+      str = str .. (first and "" or ", ")
+      if (is_array) then
+        str = str .. tojson(v)
+      else
+        str = str .. quote(tojson(k, true)) .. " : " .. tojson(v)
+      end
+      first = false
+    end
+    return str .. (is_array and " ]" or " }")
+  end
+  if type(any) == "number" then
+    return "" .. any
+  end
+  return type(any) -- coroutines, anything else?
+end
+
+function join(table, sep)
+  if (#table == 1) then
+    return table[1]
+  end
+  return reduce(table, function(prev, cur) return prev .. sep .. cur end, "")
 end
