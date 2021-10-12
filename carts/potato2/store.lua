@@ -2,7 +2,7 @@ create_module("store", function(export)
   local global_state = {}
   local subscriptions = {}
 
-  local function debug_state() printh(tostring(global_state), "store") end
+  local function debug_state() printh(tojson(global_state), "store") end
 
   export("create_store", function(reducer, initial)
     if (initial ~= nil) then
@@ -30,7 +30,7 @@ create_module("store", function(export)
   export("combine_reducers", function(name_reducer_map)
     return function(state, action)
       local new_state = {}
-      printh("dispathed " .. tostring(action), "store")
+      printh("-- dispathed " .. tojson(action), "store")
       for name, reducer in pairs(name_reducer_map) do
         new_state[name] = reducer(state[name], action)
       end
