@@ -5,14 +5,10 @@ create_module("text", function(export)
                                                             "use_dispatch").from(
     "hooks")
   local text_skip_selector, can_print_selector, text_index_selector,
-    text_done_selector, script_done_selector, text_selector = import(
-                                                                "text_skip",
-                                                                "can_print",
-                                                                "text_index",
-                                                                "text_done",
-                                                                "script_done",
-                                                                "text").from(
-    "selectors")
+    text_done_selector, script_done_selector, text_selector, choice_selector,
+    is_pending_choice_selector = import("text_skip", "can_print", "text_index",
+                                   "text_done", "script_done", "text", "choice",
+                                   "is_pending_choice").from("selectors")
   local lipsync = import("*").from("lipsync")
   local draw_text = import("draw_text").from("animation")
 
@@ -26,6 +22,7 @@ create_module("text", function(export)
       local frame_printing = 1
       local frames_per_ch = 2
       local skip = params.skip
+      local is_pending_choice = params.is_pending_choice
       local text_x = ch_width - 1
       local text_y = 128 - text_box.height + ch_width
       local mouth_sprites = lipsync.parse(s)
@@ -51,11 +48,14 @@ create_module("text", function(export)
       local x_button = chr(151)
       while (true) do
         for frame = 1, 30 do
-          draw_text(s, text_x, text_y, frame < 15)
+          draw_text(s, text_x, text_y,
+            -- see http://lua-users.org/wiki/TernaryOperator
+            not is_pending_choice and frame < 15 or false)
 
-          draw_text(x_button, 128 - ch_width * 2 - 2, frame < 15 and
-            (128 - ch_height - 2) or (128 - ch_height - 1), false)
-
+          if (not is_pending_choice) then
+            draw_text(x_button, 128 - ch_width * 2 - 2, frame < 15 and
+              (128 - ch_height - 2) or (128 - ch_height - 1), false)
+          end
           yield()
         end
       end
@@ -82,8 +82,11 @@ create_module("text", function(export)
     local skip = use_selector(text_skip_selector)
     local can_print = use_selector(can_print_selector)
     local text_index = use_selector(text_index_selector)
+    local is_pending_choice = use_selector(is_pending_choice_selector)
     local text = use_selector(text_selector)
+    local choice = use_selector(choice_selector)
     local prev_index, set_prev_index = use_state()
+    local prev_text, set_prev_text = use_state()
     local text_done = use_selector(text_done_selector)
     local script_done = use_selector(script_done_selector)
     local prev_actions, set_prev_actions = use_state({})
@@ -93,16 +96,17 @@ create_module("text", function(export)
       actions = {c_fill_bg()}
       set_prev_actions({})
     else
-      if (prev_index ~= text_index) then
+      -- FIXME: not the best comparison but it will do
+      if (prev_text ~= text) then
         actions = {c_fill_bg(), c_text_print(text, text_index, dispatch)}
         set_prev_actions(actions)
-        set_prev_index(text_index)
+        set_prev_text(text)
       end
     end
 
-    if (key_state.b and text_done) then
+    if (key_state.b and text_done and not is_pending_choice) then
       if (not script_done) then
-        dispatch({type = "text_start"})
+        dispatch({type = "text_start", choice = choice})
         dispatch({type = "start_talking"})
       else
         dispatch({type = "scene_done"})
@@ -114,6 +118,6 @@ create_module("text", function(export)
       dispatch({type = "start_talking"})
     end
 
-    return actions, {skip = skip}
+    return actions, {skip = skip, is_pending_choice = is_pending_choice}
   end)
 end)
