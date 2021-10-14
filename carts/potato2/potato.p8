@@ -11,6 +11,7 @@ __lua__
 #include mouth.lua
 #include eyes.lua
 #include text.lua
+#include choice.lua
 #include bg.lua
 #include intro.lua
 #include outro.lua
