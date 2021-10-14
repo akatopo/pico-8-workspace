@@ -13,6 +13,7 @@ __lua__
 #include text.lua
 #include choice.lua
 #include bg.lua
+#include terrain.lua
 #include intro.lua
 #include outro.lua
 #include potato.lua
