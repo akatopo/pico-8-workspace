@@ -141,5 +141,7 @@ function join(table, sep)
   if (#table == 1) then
     return table[1]
   end
-  return reduce(table, function(prev, cur) return prev .. sep .. cur end, "")
+  return reduce(table, function(prev, cur)
+    return prev .. (prev == "" and "" or sep) .. cur
+  end, "")
 end
