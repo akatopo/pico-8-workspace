@@ -44,7 +44,7 @@ potato_eyes_y = potato_mouth_y - potato_sprites.height
 function map(table, f)
   local new_table = {}
   for k, v in pairs(table) do
-    new_table[k] = f(v)
+    new_table[k] = f(v, k)
   end
 
   return new_table
