@@ -121,7 +121,12 @@ create_module("reducers", function(export)
       choice_made = function(state)
         return assign({}, state, {choice = action.choice})
       end,
-      text_start = function(state) return assign({}, state, {choice = nil}) end,
+      text_start = function(state)
+        local next_state = assign({}, state)
+        -- FIXME: assign does not play well w/ nil table values
+        next_state.choice = nil
+        return next_state
+      end,
     }
     return (dispatchers[action_type] or identity)(state or {choice = nil})
   end)
