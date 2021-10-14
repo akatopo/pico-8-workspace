@@ -1,9 +1,13 @@
 create_module("mouth", function(export)
-  local use_state, use_keys, use_selector, use_dispatch =
-    import("use_state", "use_keys", "use_selector", "use_dispatch").from("hooks")
+  local use_state, use_keys, use_selector, use_dispatch = import("use_state",
+                                                            "use_keys",
+                                                            "use_selector",
+                                                            "use_dispatch").from(
+    "hooks")
   local double_spr = import("double_spr").from("animation")
-  local mouth_selector, mouth_sprite_coords_selector =
-    import("mouth", "mouth_sprite_coords").from("selectors")
+  local mouth_selector, mouth_sprite_coords_selector = import("mouth",
+                                                         "mouth_sprite_coords").from(
+    "selectors")
 
   local function draw_mouth(sprite_coords)
     local sprite_x, sprite_y = unpack(sprite_coords)
@@ -32,12 +36,12 @@ create_module("mouth", function(export)
   local function c_mouth_talking()
     return cocreate(function(params)
       assert(params)
-      local sprite_coords = params and params.sprite_coords or nil
+      local new_params = params
       while (true) do
+        local sprite_coords = new_params and new_params.sprite_coords or nil
         draw_mouth(sprite_coords or potato_sprites.bottom_half[1])
-        local new_params = yield()
+        new_params = yield()
         assert(new_params)
-        sprite_coords = new_params and new_params.sprite_coords or nil
       end
     end)
   end
