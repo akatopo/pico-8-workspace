@@ -9,6 +9,10 @@ create_module("text", function(export)
     is_pending_choice_selector = import("text_skip", "can_print", "text_index",
                                    "text_done", "script_done", "text", "choice",
                                    "is_pending_choice").from("selectors")
+  local text_eyes_reaction_selector, text_mouth_reaction_selector = import(
+                                                                      "text_eyes_reaction",
+                                                                      "text_mouth_reaction").from(
+    "selectors")
   local lipsync = import("*").from("lipsync")
   local draw_text = import("draw_text").from("animation")
 
@@ -16,7 +20,7 @@ create_module("text", function(export)
   local text_box_coords = {1, 126, 126, 128 - text_box.height + 2}
   local text_frame_coords = {0, 127, 127, 128 - text_box.height + 1}
 
-  local function c_text_print(s, text_index, dispatch)
+  local function c_text_print(s, eyes, mouth, dispatch)
     return cocreate(function(params)
       local i = 1
       local frame_printing = 1
@@ -43,7 +47,7 @@ create_module("text", function(export)
         i = i + 1
       end
       dispatch({type = "text_done"})
-      dispatch({type = "stop_talking", text_index = text_index})
+      dispatch({type = "stop_talking", eyes = eyes, mouth = mouth})
 
       local x_button = chr(151)
       while (true) do
@@ -89,6 +93,8 @@ create_module("text", function(export)
     local prev_text, set_prev_text = use_state()
     local text_done = use_selector(text_done_selector)
     local script_done = use_selector(script_done_selector)
+    local text_eyes_reaction = use_selector(text_eyes_reaction_selector)
+    local text_mouth_reaction = use_selector(text_mouth_reaction_selector)
     local prev_actions, set_prev_actions = use_state({})
     local actions = prev_actions
 
@@ -98,7 +104,10 @@ create_module("text", function(export)
     else
       -- FIXME: not the best comparison but it will do
       if (prev_text ~= text) then
-        actions = {c_fill_bg(), c_text_print(text, text_index, dispatch)}
+        actions = {
+          c_fill_bg(),
+          c_text_print(text, text_eyes_reaction, text_mouth_reaction, dispatch),
+        }
         set_prev_actions(actions)
         set_prev_text(text)
       end

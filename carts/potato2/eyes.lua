@@ -1,8 +1,8 @@
 create_module("eyes", function(export)
   local use_state, use_selector = import("use_state", "use_selector").from(
     "hooks")
-
   local double_spr = import("double_spr").from("animation")
+  local eyes_selector = import("eyes").from("selectors")
 
   local function draw_eyes(sprite_coords)
     local sprite_x, sprite_y = unpack(sprite_coords)
@@ -79,7 +79,7 @@ create_module("eyes", function(export)
   export("default", function()
     local prev_actions, set_prev_actions =
       use_state(function() return {c_eyes_blink()} end)
-    local eye_state = use_selector(function(state) return state.eyes.eyes end)
+    local eye_state = use_selector(eyes_selector)
     local prev_state, set_prev_state = use_state()
 
     if (prev_state == eye_state) then

@@ -6,12 +6,34 @@ create_module("selectors", function(export)
     return type(path[text_index + 1]) == "table"
   end
 
+  local function get_text_table(state)
+    local index = state.text.text_index
+    local script = state.text.script
+    if (index == nil) then
+      return nil
+    end
+    assert(index <= #script and index > 0, "index out of bounds")
+    assert(type(script[index]) == "string" or type(script[index]) == "table")
+    if (type(script[index]) == "table") then
+      return script[index]
+    else
+      return {text = script[index]}
+    end
+  end
+
   local function choice(state) return state.choice.choice end
 
   export("mouth", function(state) return state.mouth.mouth end)
 
   export("mouth_sprite_coords",
     function(state) return state.mouth.sprite_coords end)
+
+  export("text_mouth_reaction", function(state)
+    local text_table = get_text_table(state)
+    return text_table.mouth_reaction and text_table.mouth_reaction or "neutral"
+  end)
+
+  export("eyes", function(state) return state.eyes.eyes end)
 
   export("text_skip",
     function(state) return state.text.text == "request_skip" end)
@@ -39,15 +61,11 @@ create_module("selectors", function(export)
   export("is_pending_choice",
     function(state) return is_branch(state) and choice(state) == nil end)
 
-  export("text", function(state)
-    local index = state.text.text_index
-    local script = state.text.script
-    if (index == nil) then
-      return nil
-    end
-    assert(index <= #script and index > 0, "index out of bounds")
-    assert(type(script[index]) == "string")
-    return script[index]
+  export("text", function(state) return get_text_table(state).text end)
+
+  export("text_eyes_reaction", function(state)
+    local text_table = get_text_table(state)
+    return text_table.eyes_reaction and text_table.eyes_reaction or "blink"
   end)
 
   export("text_done", function(state) return state.text.text == "text_done" end)
@@ -74,7 +92,7 @@ create_module("reducers", function(export)
   end)
 
   export("eyes", function(state, action)
-    local text_reactions = {[6] = "sweat", [8] = "starry", [12] = "sweat"}
+    -- local text_reactions = {[6] = "sweat", [8] = "starry", [12] = "sweat"}
 
     local action_type = action.type
     local dispatchers = {
@@ -82,10 +100,7 @@ create_module("reducers", function(export)
         return assign({}, state, {eyes = "blink"})
       end,
       stop_talking = function(state)
-        local text_index = action.text_index
-        local eye_state = text_index and text_reactions[text_index] or "blink"
-
-        return assign({}, state, {eyes = eye_state})
+        return assign({}, state, {eyes = action.eyes or "blink"})
       end,
     }
     return (dispatchers[action_type] or identity)(state or {eyes = "blink"})
@@ -100,14 +115,10 @@ create_module("reducers", function(export)
         return assign({}, state, {sprite_coords = action.sprite_coords})
       end,
       start_talking = function(state)
-        return assign({}, state, {mouth = "talking"})
+        return assign({}, state, {mouth = action.mouth or "talking"})
       end,
       stop_talking = function(state)
-        local text_index = action.text_index
-        local mouth_state = text_index and text_reactions[text_index] or
-                              "neutral"
-
-        return assign({}, state, {mouth = mouth_state})
+        return assign({}, state, {mouth = action.mouth or "neutral"})
       end,
       -- request_text_skip = function(state) return state end,
       -- text_done = function(state) return state end,
