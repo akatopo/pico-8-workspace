@@ -134,7 +134,7 @@ function tojson(any, no_quote)
   if type(any) == "number" then
     return "" .. any
   end
-  return type(any) -- coroutines, anything else?
+  return quote(type(any)) -- coroutines, anything else?
 end
 
 function join(table, sep)
