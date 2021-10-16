@@ -7,17 +7,55 @@ create_module("hooks", function(export)
   -- local store_hook_selectors = {}
 
   local prev_output
-  function hooks_debug()
-    local output = "\nstate_hook_vals: " .. tostring(state_hook_vals)
+  local function hooks_debug()
+    local output = "\n " .. tojson(state_hook_vals)
+    local delimeter = ""
     if (prev_output == nil) then
-      printh("------", "hooks_debug_log", true)
+      printh("[\n", "hooks", true)
+    else
+      delimeter = "\n,\n"
     end
     if (prev_output == output) then
       return
     end
 
     prev_output = output
-    printh(output, "hooks_debug_log")
+    printh(delimeter .. output, "hooks")
+  end
+
+  local function use_state(initial)
+    local component_id = cur_component_id
+    -- maybe move elsewhere
+    if (state_hook_indices[component_id] == nil) then
+      state_hook_indices[component_id] = 0
+    end
+
+    if (state_hook_initial_vals[component_id] == nil) then
+      state_hook_initial_vals[component_id] = {}
+    end
+
+    if (state_hook_vals[component_id] == nil) then
+      state_hook_vals[component_id] = {}
+    end
+    --
+
+    assert(component_id ~= nil)
+    state_hook_indices[component_id] = state_hook_indices[component_id] + 1
+
+    local state_idx = state_hook_indices[component_id]
+
+    if (state_hook_initial_vals[component_id][state_idx] == nil) then
+      local calculated_initial = type(initial) == "function" and initial() or
+                                   initial
+      state_hook_initial_vals[component_id][state_idx] = true
+      state_hook_vals[component_id][state_idx] = calculated_initial
+    end
+
+    local set_state = function(v)
+      state_hook_vals[component_id][state_idx] = v
+    end
+
+    return state_hook_vals[component_id][state_idx], set_state
   end
 
   export("component_wrapper", function(component, id, store)
@@ -54,40 +92,33 @@ create_module("hooks", function(export)
     }
   end)
 
-  export("use_state", function(initial)
-    local component_id = cur_component_id
-    -- maybe move elsewhere
-    if (state_hook_indices[component_id] == nil) then
-      state_hook_indices[component_id] = 0
+  export("use_memo", function(f, deps)
+    local memo_tuple, set_memo_tuple = use_state(function()
+      return {f(), deps}
+    end)
+    local memo = memo_tuple[1]
+    local old_deps = memo_tuple[2]
+
+    assert(#deps == #old_deps,
+      "deps must have the same length" .. tojson(memo_tuple))
+
+    local equal = true
+    for i, v in pairs(deps) do
+      if (v ~= old_deps[i]) then
+        equal = false
+      end
     end
 
-    if (state_hook_initial_vals[component_id] == nil) then
-      state_hook_initial_vals[component_id] = {}
+    if (equal) then
+      return memo
+    else
+      local res = f()
+      set_memo_tuple({res, deps})
+      return res
     end
-
-    if (state_hook_vals[component_id] == nil) then
-      state_hook_vals[component_id] = {}
-    end
-    --
-
-    assert(component_id ~= nil)
-    state_hook_indices[component_id] = state_hook_indices[component_id] + 1
-
-    local state_idx = state_hook_indices[component_id]
-
-    if (state_hook_initial_vals[component_id][state_idx] == nil) then
-      local calculated_initial = type(initial) == "function" and initial() or
-                                   initial
-      state_hook_initial_vals[component_id][state_idx] = true
-      state_hook_vals[component_id][state_idx] = calculated_initial
-    end
-
-    local set_state = function(v)
-      state_hook_vals[component_id][state_idx] = v
-    end
-
-    return state_hook_vals[component_id][state_idx], set_state
   end)
+
+  export("use_state", use_state)
 
   export("reset_hooks", function()
     for component_id, value in pairs(state_hook_indices) do
