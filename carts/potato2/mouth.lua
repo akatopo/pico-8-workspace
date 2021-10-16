@@ -1,13 +1,18 @@
 create_module("mouth", function(export)
-  local use_state, use_keys, use_selector, use_dispatch = import("use_state",
-                                                            "use_keys",
-                                                            "use_selector",
-                                                            "use_dispatch").from(
+  local use_state, use_keys, use_selector, use_dispatch, use_memo = import(
+                                                                      "use_state",
+                                                                      "use_keys",
+                                                                      "use_selector",
+                                                                      "use_dispatch",
+                                                                      "use_memo").from(
     "hooks")
   local double_spr = import("double_spr").from("animation")
-  local mouth_selector, mouth_sprite_coords_selector = import("mouth",
-                                                         "mouth_sprite_coords").from(
+  local mouth_selector, mouth_text_selector, mouth_text_index_selector = import(
+                                                                           "mouth",
+                                                                           "mouth_text",
+                                                                           "mouth_text_index").from(
     "selectors")
+  local lipsync = import("*").from("lipsync")
 
   local function draw_mouth(sprite_coords)
     local sprite_x, sprite_y = unpack(sprite_coords)
@@ -52,10 +57,15 @@ create_module("mouth", function(export)
     local dispatch = use_dispatch()
 
     local mouth_state = use_selector(mouth_selector)
-    local sprite_coords = use_selector(mouth_sprite_coords_selector)
+    local text = use_selector(mouth_text_selector)
+    local text_index = use_selector(mouth_text_index_selector)
+
+    local mouth_sprites = use_memo(function()
+      return (text and #text) and lipsync.parse(text) or {}
+    end, {text or ""})
 
     if (prev_state == mouth_state) then
-      return prev_actions, {sprite_coords = sprite_coords}
+      return prev_actions, {sprite_coords = mouth_sprites[text_index]}
     end
 
     local new_actions = {}
@@ -69,6 +79,6 @@ create_module("mouth", function(export)
     set_prev_state(mouth_state)
     set_prev_actions(new_actions)
 
-    return new_actions, {sprite_coords = sprite_coords}
+    return new_actions, {sprite_coords = mouth_sprites[text_index]}
   end)
 end)

@@ -25,13 +25,14 @@ create_module("selectors", function(export)
 
   export("mouth", function(state) return state.mouth.mouth end)
 
-  export("mouth_sprite_coords",
-    function(state) return state.mouth.sprite_coords end)
-
   export("text_mouth_reaction", function(state)
     local text_table = get_text_table(state)
     return text_table.mouth_reaction and text_table.mouth_reaction or "neutral"
   end)
+
+  export("mouth_text", function(state) return state.mouth.text end)
+
+  export("mouth_text_index", function(state) return state.mouth.text_index end)
 
   export("eyes", function(state) return state.eyes.eyes end)
 
@@ -92,8 +93,6 @@ create_module("reducers", function(export)
   end)
 
   export("eyes", function(state, action)
-    -- local text_reactions = {[6] = "sweat", [8] = "starry", [12] = "sweat"}
-
     local action_type = action.type
     local dispatchers = {
       start_talking = function(state)
@@ -107,12 +106,11 @@ create_module("reducers", function(export)
   end)
 
   export("mouth", function(state, action)
-    local text_reactions = {[8] = "smiling"}
-
     local action_type = action.type
     local dispatchers = {
       letter_printed = function(state)
-        return assign({}, state, {sprite_coords = action.sprite_coords})
+        return assign({}, state,
+          {text = action.text, text_index = action.text_index})
       end,
       start_talking = function(state)
         return assign({}, state, {mouth = action.mouth or "talking"})

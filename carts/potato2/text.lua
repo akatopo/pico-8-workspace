@@ -29,14 +29,13 @@ create_module("text", function(export)
       local is_pending_choice = params.is_pending_choice
       local text_x = ch_width - 1
       local text_y = 128 - text_box.height + ch_width
-      local mouth_sprites = lipsync.parse(s)
 
       while (i ~= #s + 1) do
         if (skip) then
           break
         end
 
-        dispatch({type = "letter_printed", sprite_coords = mouth_sprites[i]})
+        dispatch({type = "letter_printed", text = s, text_index = i})
         sfx(30)
         for frame = 1, frames_per_ch do
           draw_text(sub(s, 1, i), text_x, text_y, frame_printing % 30 < 15)
