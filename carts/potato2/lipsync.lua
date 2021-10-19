@@ -1,5 +1,5 @@
 create_module("lipsync", function(export)
-  local sounds = {
+  local sounds_normal = {
     ["a"] = potato_sprites.bottom_half[9],
     ["e"] = potato_sprites.bottom_half[9],
     ["i"] = potato_sprites.bottom_half[9],
@@ -31,7 +31,40 @@ create_module("lipsync", function(export)
     ["v"] = potato_sprites.bottom_half[1],
   }
 
-  export("parse", function(s)
+  local sounds_masked = {
+    ["a"] = potato_sprites.bottom_half[10],
+    ["e"] = potato_sprites.bottom_half[10],
+    ["i"] = potato_sprites.bottom_half[10],
+    ["c"] = potato_sprites.bottom_half[10],
+    ["d"] = potato_sprites.bottom_half[10],
+    ["g"] = potato_sprites.bottom_half[10],
+    ["k"] = potato_sprites.bottom_half[10],
+    ["n"] = potato_sprites.bottom_half[10],
+    ["s"] = potato_sprites.bottom_half[10],
+    ["t"] = potato_sprites.bottom_half[10],
+    ["x"] = potato_sprites.bottom_half[10],
+    ["y"] = potato_sprites.bottom_half[10],
+    ["z"] = potato_sprites.bottom_half[10],
+    ["o"] = potato_sprites.bottom_half[11],
+    ["ee"] = potato_sprites.bottom_half[10],
+    ["ch"] = potato_sprites.bottom_half[11],
+    ["j"] = potato_sprites.bottom_half[11],
+    ["sh"] = potato_sprites.bottom_half[11],
+    ["b"] = potato_sprites.bottom_half[11],
+    ["m"] = potato_sprites.bottom_half[11],
+    ["p"] = potato_sprites.bottom_half[11],
+    ["q"] = potato_sprites.bottom_half[11],
+    ["w"] = potato_sprites.bottom_half[11],
+    ["oo"] = potato_sprites.bottom_half[11],
+    ["r"] = potato_sprites.bottom_half[11],
+    ["l"] = potato_sprites.bottom_half[10],
+    ["th"] = potato_sprites.bottom_half[10],
+    ["f"] = potato_sprites.bottom_half[11],
+    ["v"] = potato_sprites.bottom_half[11],
+  }
+
+  export("parse", function(s, mouth)
+    local sounds = mouth == "talking_masked" and sounds_masked or sounds_normal
     local two_letter_sound_sprite_coords = nil
     local res = {}
     for i = 1, #s do
