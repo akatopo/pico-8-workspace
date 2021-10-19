@@ -23,12 +23,19 @@ create_module("selectors", function(export)
 
   local function choice(state) return state.choice.choice end
 
+  local function text_mouth(state)
+    local text_table = get_text_table(state)
+    return text_table.mouth and text_table.mouth or "talking"
+  end
+
   export("mouth", function(state) return state.mouth.mouth end)
 
   export("text_mouth_reaction", function(state)
     local text_table = get_text_table(state)
     return text_table.mouth_reaction and text_table.mouth_reaction or "neutral"
   end)
+
+  export("text_mouth", text_mouth)
 
   export("mouth_text", function(state) return state.mouth.text end)
 

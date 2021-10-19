@@ -20,6 +20,15 @@ create_module("mouth", function(export)
     double_spr(sprite_x, sprite_y, potato_mouth_x, potato_mouth_y)
   end
 
+  local function c_mouth_masked()
+    return cocreate(function()
+      while (true) do
+        draw_mouth(potato_sprites.bottom_half[10])
+        yield()
+      end
+    end)
+  end
+
   local function c_mouth_neutral()
     return cocreate(function()
       while (true) do
@@ -61,8 +70,8 @@ create_module("mouth", function(export)
     local text_index = use_selector(mouth_text_index_selector)
 
     local mouth_sprites = use_memo(function()
-      return (text and #text) and lipsync.parse(text) or {}
-    end, {text or ""})
+      return (text and #text) and lipsync.parse(text, mouth_state) or {}
+    end, {text or "", mouth_state})
 
     if (prev_state == mouth_state) then
       return prev_actions, {sprite_coords = mouth_sprites[text_index]}
@@ -73,6 +82,8 @@ create_module("mouth", function(export)
       new_actions = {c_mouth_neutral()}
     elseif (mouth_state == "smiling") then
       new_actions = {c_mouth_smiling()}
+    elseif (mouth_state == "masked") then
+      new_actions = {c_mouth_masked()}
     else
       new_actions = {c_mouth_talking()}
     end

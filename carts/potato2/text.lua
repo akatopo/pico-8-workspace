@@ -9,10 +9,9 @@ create_module("text", function(export)
     is_pending_choice_selector = import("text_skip", "can_print", "text_index",
                                    "text_done", "script_done", "text", "choice",
                                    "is_pending_choice").from("selectors")
-  local text_eyes_reaction_selector, text_mouth_reaction_selector = import(
-                                                                      "text_eyes_reaction",
-                                                                      "text_mouth_reaction").from(
-    "selectors")
+  local text_eyes_reaction_selector, text_mouth_reaction_selector,
+    text_mouth_selector = import("text_eyes_reaction", "text_mouth_reaction",
+                            "text_mouth").from("selectors")
   local lipsync = import("*").from("lipsync")
   local draw_text = import("draw_text").from("animation")
 
@@ -93,6 +92,7 @@ create_module("text", function(export)
     local text_done = use_selector(text_done_selector)
     local script_done = use_selector(script_done_selector)
     local text_eyes_reaction = use_selector(text_eyes_reaction_selector)
+    local text_mouth = use_selector(text_mouth_selector)
     local text_mouth_reaction = use_selector(text_mouth_reaction_selector)
     local prev_actions, set_prev_actions = use_state({})
     local actions = prev_actions
@@ -103,6 +103,7 @@ create_module("text", function(export)
     else
       -- FIXME: not the best comparison but it will do
       if (prev_text ~= text) then
+        dispatch({type = "start_talking", mouth = text_mouth or "talking"})
         actions = {
           c_fill_bg(),
           c_text_print(text, text_eyes_reaction, text_mouth_reaction, dispatch),
@@ -115,15 +116,12 @@ create_module("text", function(export)
     if (key_state.b and text_done and not is_pending_choice) then
       if (not script_done) then
         dispatch({type = "text_start", choice = choice})
-        dispatch({type = "start_talking"})
+
       else
         dispatch({type = "scene_done"})
       end
     elseif (key_state.b and can_print) then
       dispatch({type = "request_text_skip"})
-    elseif (key_state.a and not can_print) then
-      dispatch({type = "text_start"})
-      dispatch({type = "start_talking"})
     end
 
     return actions, {skip = skip, is_pending_choice = is_pending_choice}
