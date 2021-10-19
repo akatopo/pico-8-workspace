@@ -7,12 +7,8 @@ create_module("outro", function(export)
     return cocreate(function()
       music(0)
 
-      -- lazy, just the way I like it XD
-      potato_mouth_y = 100
-      potato_eyes_x = potato_mouth_x
-      potato_eyes_y = potato_mouth_y - potato_sprites.height
-
       while (true) do
+        cls(3)
         -- https://www.lexaloffle.com/bbs/?pid=9994
         -- for each color
         -- (from pink -> white)
