@@ -1,3 +1,7 @@
+if (not DEBUG) then
+  printh = function() end
+end
+
 ch_width = 4
 ch_height = 6
 
