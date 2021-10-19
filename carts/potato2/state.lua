@@ -3,14 +3,18 @@ create_module("selectors", function(export)
     local text_index = state.text.text_index
     local path = state.text.script
 
-    return type(path[text_index + 1]) == "table"
+    return
+      type(path[text_index + 1]) == "table" and path[text_index + 1].text == nil
   end
 
   local function get_text_table(state)
+    if (not state.text) then
+      return {}
+    end
     local index = state.text.text_index
     local script = state.text.script
     if (index == nil) then
-      return nil
+      return {}
     end
     assert(index <= #script and index > 0, "index out of bounds")
     assert(type(script[index]) == "string" or type(script[index]) == "table")
@@ -165,11 +169,12 @@ create_module("reducers", function(export)
         local text_index = state.text_index
         local path = state.script
 
-        if (type(path[text_index + 1]) == "table") then
+        if (type(path[text_index + 1]) == "table" and path[text_index + 1].text ==
+          nil) then
           assert(text_index + 1 == #path,
             "branches should be in the end of paths")
           path = path[text_index + 1][choice or 1].path
-          assert(type(path[1]) == "string")
+          assert(type(path[1]) == "string" or type(path[1].text) == "string")
           text_index = 1
         else
           text_index = text_index and text_index + 1 or 1
