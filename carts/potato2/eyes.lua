@@ -6,7 +6,12 @@ create_module("eyes", function(export)
 
   local function draw_eyes(sprite_coords, x, y)
     local sprite_x, sprite_y = unpack(sprite_coords)
-    double_spr(sprite_x, sprite_y, x, y)
+
+    double_spr(sprite_x, sprite_y, x, y + get_float_y_offset)
+  end
+
+  local function draw_reaction_sprite(sprite, x, y)
+    spr(sprite, x, y + get_float_y_offset)
   end
 
   local function c_eyes_move(x, y)
@@ -25,20 +30,49 @@ create_module("eyes", function(export)
     end)
   end
 
+  local function c_eyes_neutral(x, y)
+    return cocreate(function()
+      while (true) do
+        draw_eyes(potato_sprites.top_half[8], x, y)
+        yield()
+      end
+    end)
+  end
+
   local function c_eyes_sweat(x, y)
     return cocreate(function()
       local final_y_offset = 5
       for y_offset = -1, final_y_offset, 1 do
         for frame = 1, 3 do
           draw_eyes(potato_sprites.top_half[8], x, y)
-          spr(16, potato_eyes_x + potato_sprites.width + 3,
+          draw_reaction_sprite(16, potato_eyes_x + potato_sprites.width + 3,
             potato_eyes_y + y_offset)
           yield()
         end
       end
       while (true) do
         draw_eyes(potato_sprites.top_half[8], x, y)
-        spr(16, potato_eyes_x + potato_sprites.width + 3,
+        draw_reaction_sprite(16, potato_eyes_x + potato_sprites.width + 3,
+          potato_eyes_y + final_y_offset)
+        yield()
+      end
+    end)
+  end
+
+  local function c_eyes_angry(x, y)
+    return cocreate(function()
+      local final_y_offset = 5
+      for y_offset = -1, final_y_offset, 1 do
+        for frame = 1, 3 do
+          draw_eyes(potato_sprites.top_half[8], x, y)
+          draw_reaction_sprite(32, potato_eyes_x + potato_sprites.width + 3,
+            potato_eyes_y + y_offset)
+          yield()
+        end
+      end
+      while (true) do
+        draw_eyes(potato_sprites.top_half[8], x, y)
+        draw_reaction_sprite(32, potato_eyes_x + potato_sprites.width + 3,
           potato_eyes_y + final_y_offset)
         yield()
       end
@@ -112,6 +146,10 @@ create_module("eyes", function(export)
       f = c_eyes_happy
     elseif (eye_state == "sweat") then
       f = c_eyes_sweat
+    elseif (eye_state == "angry") then
+      f = c_eyes_angry
+    elseif (eye_state == "neutral") then
+      f = c_eyes_neutral
     elseif (eye_state == "move") then
       f = c_eyes_move
     elseif (eye_state == "alex") then
