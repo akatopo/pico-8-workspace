@@ -49,6 +49,8 @@ potato_mouth_y = 40
 potato_eyes_x = potato_mouth_x
 potato_eyes_y = potato_mouth_y - potato_sprites.height
 
+function get_float_y_offset() return min(cos((t() * 30) / 90) * 2, 1) end
+
 function map(table, f)
   local new_table = {}
   for k, v in pairs(table) do
