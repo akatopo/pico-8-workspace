@@ -17,7 +17,7 @@ create_module("mouth", function(export)
   local function draw_mouth(sprite_coords, x, y)
     local sprite_x, sprite_y = unpack(sprite_coords)
 
-    double_spr(sprite_x, sprite_y, x, y)
+    double_spr(sprite_x, sprite_y, x, y + get_float_y_offset())
   end
 
   local function cocreate_static_sprite_draw(sprite_coords, x, y)
@@ -27,6 +27,10 @@ create_module("mouth", function(export)
         yield()
       end
     end)
+  end
+
+  local function c_mouth_open(x, y)
+    return cocreate_static_sprite_draw(potato_sprites.bottom_half[2], x, y)
   end
 
   local function c_mouth_masked(x, y)
@@ -66,6 +70,15 @@ create_module("mouth", function(export)
     end)
   end
 
+  local function c_shadow(x, y)
+    return cocreate(function()
+      while (true) do
+        double_spr(96, 120, x, y + potato_sprites.height)
+        yield()
+      end
+    end)
+  end
+
   export("default", function(props)
     local x = props.x or potato_mouth_x
     local y = props.y or potato_mouth_y
@@ -96,6 +109,8 @@ create_module("mouth", function(export)
       f = c_mouth_smiling
     elseif (mouth_state == "masked") then
       f = c_mouth_masked
+    elseif (mouth_state == "open") then
+      f = c_mouth_open
     elseif (mouth_state == "alex") then
       f = c_mouth_alex
     elseif (mouth_state == "so") then
@@ -105,7 +120,7 @@ create_module("mouth", function(export)
     else
       f = c_mouth_talking
     end
-    new_actions = {f(unpack(position))}
+    new_actions = {c_shadow(unpack(position)), f(unpack(position))}
 
     set_prev_state(mouth_state)
     set_prev_actions(new_actions)
