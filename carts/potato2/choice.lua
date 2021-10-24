@@ -93,6 +93,9 @@ create_module("choice", function(export)
 
       if (new_choice ~= prev_choice) then
         assert(new_choice ~= nil)
+        if (key_state.down or key_state.up) then
+          sfx(29)
+        end
         actions = {
           c_fill_bg(branch_choices), c_draw_choices(branch_choices, new_choice),
         }
