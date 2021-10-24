@@ -4,7 +4,7 @@ create_module("bg", function(export)
   local function c_fill_bg()
     return cocreate(function()
       while (true) do
-        rectfill(0, 0, 128, 128 - text_box.height, colors.blue)
+        rectfill(0, 0, 128, 128 - text_box.height, colors["light-peach"])
         yield()
       end
     end)
