@@ -1,3 +1,6 @@
 {
-  "vscode-lua-format.configPath": "./lua-style-conf"
+  "vscode-lua-format.configPath": "./lua-style-conf",
+  "search.exclude": {
+    "**/carts/potato/": true
+  }
 }
