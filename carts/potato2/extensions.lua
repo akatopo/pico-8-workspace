@@ -76,6 +76,25 @@ function assign(table, ...)
   return table
 end
 
+-- https://stackoverflow.com/a/8300819
+function concat(...)
+  local t = {}
+  local others = {...}
+
+  for i = 1, #others do
+    local array = others[i]
+    if (type(array) == "table") then
+      for j = 1, #array do
+        t[#t + 1] = array[j]
+      end
+    else
+      t[#t + 1] = array
+    end
+  end
+
+  return t
+end
+
 function identity(x) return x end
 
 -- https://www.lexaloffle.com/bbs/?pid=43636
